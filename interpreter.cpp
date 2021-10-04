@@ -90,7 +90,7 @@ namespace Parser {
 
 // : Error
 namespace Error {
-  static char const INVALID_TOKEN[] = "[Syntax Error in \"%s:%u:%u\"]: Invalid token `%c`" "\r\n" "%s";
+  static char const INVALID_TOKEN[] = "[Syntax Error in \"%s:%u:%u\"]: Invalid token `%1.*s`" "\r\n" "%s";
 
   static char const OUT_OF_MEMORY[] = "[Memory Error]: Usable memory exhausted (%s allocated)";
 
@@ -267,8 +267,9 @@ char const* Parser::logTrace(char const line[], std::size_t const length, std::s
     std::strncpy(iterator, line, length); iterator += length;
     std::strcpy (iterator, "\r\n" " | "); iterator += 5;
 
-    while (--index) *++iterator = '~';
-    std::strcpy(iterator, "^");
+    while (--index) *(iterator++) = '~';
+    *(iterator++) = '^';
+    *(iterator++) = '\0';
   }
 
   // ...
@@ -358,6 +359,7 @@ void INITIATE() {
 
       // : [Multi-line Comment]
       if (NULL != multilined && NULL != Parser::afterMultilineCommentBeginToken(recent, recentLength)) {
+        --column;
         commenting = false;
         current = multilined - 1;
       }
@@ -371,9 +373,10 @@ void INITIATE() {
           escaped = false == escaped;
         }
 
+        current = newlined - 1;
         if (false == escaped) {
+          --column;
           commenting = false;
-          current = newlined - 1;
         }
       }
     }
@@ -388,6 +391,7 @@ void INITIATE() {
         }
 
         if (false == escaped) {
+          --column;
           current = stringified - 1;
           stringifying = false;
         }
@@ -396,6 +400,7 @@ void INITIATE() {
 
     else if (identifying) {
       if (NULL == identified) {
+        --column;
         --current;
         identifying = false;
       }
@@ -438,13 +443,17 @@ void INITIATE() {
 
     // : ...
     else if (currentLength) {
-      std::size_t length = currentLength;
+      std::size_t length = 0u;
 
-      for (char const *iterator = Source::CODE + currentLength; Source::SIZE != length; ++iterator, ++length)
+      for (char const *iterator = current; Source::SIZE != static_cast<std::size_t>(iterator - Source::CODE); ++iterator, ++length)
       if (NULL != Parser::afterNewline(iterator, iterator - Source::CODE)) break;
 
-      TERMINATE(Error::INVALID_TOKEN, Source::FILE_PATH, line, column, *current, Parser::logTrace(Source::CODE + (currentLength - (column - 1u)), (length - currentLength) + (column - 1u), column));
+      TERMINATE(Error::INVALID_TOKEN, Source::FILE_PATH, line, column, '`' == *current ? 2 : 1, '`' == *current ? "\\`" : current, Parser::logTrace(current - (column - 1u), length + (column - 1u), column));
     }
+
+    // ...
+    if (NULL == newlined) ++column;
+    else { column = 1u; ++line; }
 
     // ...
     if (NULL != tokenCode) {
@@ -471,10 +480,6 @@ void INITIATE() {
     }
 
     // ...
-    if (NULL == newlined) ++column;
-    else { column = 1u; ++line; }
-
-    // ...
     if (0u == currentLength) break;
   }
 
@@ -483,17 +488,22 @@ void INITIATE() {
     if (NULL != allocation) Parser::TOKENS = static_cast<Token*>(allocation);
   }
 
-  // ... [Parse]
+  // ...
   for (Token *iterator = Parser::TOKENS; Parser::TOKEN_COUNT != static_cast<std::size_t>(iterator - Parser::TOKENS); ++iterator) {
-    std::printf("[%u]: (%u : %s) \"", iterator - Parser::TOKENS, iterator -> getLength(),
-      Token::COMMENT    == iterator -> type ? "COMMENT"    :
-      Token::IDENTIFIER == iterator -> type ? "IDENTIFIER" :
-      Token::STRING     == iterator -> type ? "STRING"     :
-      Token::SYMBOL     == iterator -> type ? "SYMBOL"     :
-      "..."
-    );
-    std::fwrite(iterator -> code, sizeof(char), iterator -> getLength(), stdout);
-    std::printf("%3s", "\"" "\r\n");
+    Token *const token = iterator;
+
+    static_cast<void>(token);
+    // 0 == std::strncmp(token -> code, "alias", 5u)
+    // code, column, line, type
+    // std::printf("[%u]: (%u : %s) \"", iterator - Parser::TOKENS, iterator -> getLength(),
+    //   Token::COMMENT    == iterator -> type ? "COMMENT"    :
+    //   Token::IDENTIFIER == iterator -> type ? "IDENTIFIER" :
+    //   Token::STRING     == iterator -> type ? "STRING"     :
+    //   Token::SYMBOL     == iterator -> type ? "SYMBOL"     :
+    //   "..."
+    // );
+    // std::fwrite(iterator -> code, sizeof(char), iterator -> getLength(), stdout);
+    // std::printf("%3s", "\"" "\r\n");
   }
 }
 

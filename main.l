@@ -83,7 +83,8 @@ string text:11 = "Lorem ipsum";                                 // truncates the
 string text:sizeof string - sizeof char* = "Lorem ipsum";       // truncates the `end` member
 string text:sizeof string - sizeof string::end = "Lorem ipsum"; // truncates the `end` member
 
-"Foo bar baz".length; // by default a `string` unless initialized as `char[]`, or `char*`
+"Foo bar baz".length; // by default a `string` \
+                         unless initialized as `char[]`, or `char*`
 char*("Foo bar baz");
 char[]("Foo bar baz");
 char[13]("Foo bar baz");
