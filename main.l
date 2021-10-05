@@ -1,29 +1,20 @@
-alias binary1  :1;
-alias binary2  :2;
-alias binary4  :4;
-alias binary8  :8;
-alias binary16 :16;
-alias binary32 :32;
-alias binary64 :64;
-alias binary128:128;
-alias bit:1;
+alias bit:1b;
+alias bool = bit;
+alias byte:1;
+alias char:1;
+alias int8  :signed 8;
+alias int16 :signed 16;
+alias int32 :signed 32;
+alias int64 :signed 64;
+alias int128:signed 128;
+alias int = int32;
+alias uint8  :unsigned 8;
+alias uint16 :unsigned 16;
+alias uint32 :unsigned 32;
+alias uint64 :unsigned 64;
+alias uint128:unsigned 128;
+alias uint = int32;
 
-alias bool    = binary1;
-alias byte    = bit;
-alias char    = binary1;
-alias int     = binary32;
-alias int8    = signed binary8;
-alias int16   = signed binary16;
-alias int32   = signed binary32;
-alias int64   = signed binary64;
-alias int128  = signed binary128;
-alias uint8   = unsigned binary8;
-alias uint16  = unsigned binary16;
-alias uint32  = unsigned binary32;
-alias uint64  = unsigned binary64;
-alias uint128 = unsigned binary128;
-alias size_t  = unsigned;
-alias ssize_t = signed;
 // `long`  doubles   the size by two  (effects members)
 // `short` truncates the size by half (effects members)
 // `signed`   enforces compile-time checks (defaults to `int`)
@@ -34,8 +25,8 @@ struct float {
   var characteristics:23;
   var mantissa:8;
 
-  [constructor](float);
-  float& [operator =](float);
+  @constructor(float);
+  float& @operator =(float);
   // ... and others
 };
 
@@ -44,16 +35,16 @@ struct string {
   private { char *end; }
 
   // ...
-  [constructor](char[] value) : value{value} {}
-  [constructor](char*  value, size_t length) : value{value}, end{value + length} {}
-  [constructor](char[] value, size_t length) : value{value}, end{&value[length]} {}
+  @constructor(char[] value) : value{value} {}
+  @constructor(char*  value, unsigned length) : value{value}, end{value + length} {}
+  @constructor(char[] value, unsigned length) : value{value}, end{&value[length]} {}
 
   // ...
   static string& concat(string&);
   static string concat(string&, string&);
 
-  get size_t length() { return end - value; }
-  char& [operator []](ssize_t index) { return this.value[index]; }
+  get unsigned length() { return end - value; }
+  char& @operator [](signed index) { return this.value[index]; }
 };
 
 /* ... */
