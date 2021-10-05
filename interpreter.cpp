@@ -28,7 +28,7 @@ namespace Utility {
   #endif
   static type* launder(type* pointer) /* noexcept */ {
     #if __cplusplus >= 201703L && ( \
-      (__cpp_lib_launder >= 201606L) || \
+      (defined(__cpp_lib_launder) && __cpp_lib_launder >= 201606L) || \
       (defined(_MSC_VER) && defined(_HAS_LAUNDER)) || \
       (defined(_LIBCPP_VERSION) && (_LIBCPP_VERSION >= (defined(__ANDROID__) ? 7000 : 6000))) \
     )
@@ -67,20 +67,36 @@ namespace Source {
 
 // : Parser
 namespace Parser {
-  // struct Expression : public Token {
-  //   Expression *children;
-  //   std::size_t count;
+  struct Token {
+    char *code;
+    std::size_t column;
+    std::size_t line;
+    enum Type { COMMENT, IDENTIFIER, SYMBOL, TEXT } type;
 
-  //   // ...
-  //   Expression(Type const type, char const code[], std::size_t const line, std::size_t const column) :
-  //     Token::Token(type, code, line, column),
-  //     children(NULL), count(0u)
-  //   {}
+    protected:
+      Token() {}
 
-  //   // ...
-  //   void addChildExpression(Expression const&);
-  //   void removeChildExpression(Expression const&);
-  // };
+    public:
+      Token(Type const type, char const code[], std::size_t const line, std::size_t const column) :
+        code  (const_cast<char*>(code)),
+        column(column),
+        line  (line),
+        type  (type)
+      {}
+
+      // ...
+      char* getBegin(Token const* const, std::size_t const, char const[], std::size_t const) const {
+        return this -> code;
+      }
+
+      char* getEnd(Token const* const tokens, std::size_t const count, char const code[], std::size_t const length) const {
+        return this + 1 == tokens + count ? const_cast<char*>(code + length) : (this + 1) -> code;
+      }
+
+      std::size_t getLength(Token const* const tokens, std::size_t const count, char const code[], std::size_t const length) const {
+        return this -> getEnd(tokens, count, code, length) - this -> getBegin(tokens, count, code, length);
+      }
+  };
 
   namespace Keyword {
     static char const ALIAS      [] = "alias";
@@ -111,36 +127,36 @@ namespace Parser {
     static char const WHILE      [] = "while";
   }
 
-  struct Token {
-    char *code;
-    std::size_t column;
-    std::size_t line;
-    enum Type { COMMENT, IDENTIFIER, SYMBOL, TEXT } type;
+  struct Expression : public Token {
+    Expression *children;
+    std::size_t count;
 
-    // ...
-    Token(Type const type, char const code[], std::size_t const line, std::size_t const column) :
-      code  (const_cast<char*>(code)),
-      column(column),
-      line  (line),
-      type  (type)
-    {}
+    public:
+      Expression() {
+        this -> children = NULL;
+        this -> code     = NULL;
+        this -> column   = 0u;
+        this -> count    = 0u;
+        this -> line     = 0u;
+      }
 
-    // ...
-    char* getBegin(Token const* const, std::size_t const, char const[], std::size_t const) const {
-      return this -> code;
-    }
+      Expression(Type const type, char const code[], std::size_t const line, std::size_t const column) :
+        Token::Token(type, code, line, column),
+        children(NULL), count(0u)
+      {}
 
-    char* getEnd(Token const* const tokens, std::size_t const count, char const code[], std::size_t const length) const {
-      return this + 1 == tokens + count ? const_cast<char*>(code + length) : (this + 1) -> code;
-    }
+      ~Expression() {
+        std::free(this -> children);
+        this -> count = 0u;
+      }
 
-    std::size_t getLength(Token const* const tokens, std::size_t const count, char const code[], std::size_t const length) const {
-      return this -> getEnd(tokens, count, code, length) - this -> getBegin(tokens, count, code, length);
-    }
+      // ...
+      void addChildExpression(Expression const&);
+      void removeChildExpression(Expression const&);
   };
 
   // ...
-  // static Expression SYNTAX_TREE = Expression();
+  static Expression SYNTAX_TREE = Expression();
 
   static std::size_t TOKEN_COUNT = 0u;
   static Token      *TOKENS = NULL;
@@ -569,52 +585,52 @@ void INITIATE() {
     Token *const token = Utility::launder(iterator);
     std::size_t const length = token -> getLength(Parser::TOKENS, Parser::TOKEN_COUNT, Source::CODE, Source::SIZE);
 
-    // switch (token -> type) {
-    //   case Token::COMMENT: break;
-    //   case Token::IDENTIFIER: {
-    //     // static char const ALIAS      [] = "alias";
-    //     // static char const BREAK      [] = "break";
-    //     // static char const CASE       [] = "case";
-    //     // static char const CLASS      [] = "class";
-    //     // static char const CONSTANT   [] = "const";
-    //     // static char const DEFAULT    [] = "default";
-    //     // static char const DO         [] = "do";
-    //     // static char const ELSE       [] = "else";
-    //     // static char const ENUMERATION[] = "enum";
-    //     // static char const FOR        [] = "for";
-    //     // static char const IF         [] = "if";
-    //     // static char const LONG       [] = "long";
-    //     // static char const OPERATOR   [] = "operator";
-    //     // static char const PRIVATE    [] = "private";
-    //     // static char const PUBLIC     [] = "public";
-    //     // static char const RETURN     [] = "return";
-    //     // static char const SHORT      [] = "short";
-    //     // static char const SIGNED     [] = "signed";
-    //     // static char const SIZEOF     [] = "sizeof";
-    //     // static char const STRUCTURE  [] = "struct";
-    //     // static char const SWITCH     [] = "switch";
-    //     // static char const UNSIGNED   [] = "unsigned";
-    //     // static char const USING      [] = "using";
-    //     // static char const VAR        [] = "var";
-    //     // static char const VOID       [] = "void";
-    //     // static char const WHILE      [] = "while";
-    //   } break;
+    static_cast<void>(length);
+    switch (token -> type) {
+      case Token::COMMENT: break;
+      case Token::IDENTIFIER: {
+        // static char const ALIAS      [] = "alias";
+        // static char const BREAK      [] = "break";
+        // static char const CASE       [] = "case";
+        // static char const CLASS      [] = "class";
+        // static char const CONSTANT   [] = "const";
+        // static char const DEFAULT    [] = "default";
+        // static char const DO         [] = "do";
+        // static char const ELSE       [] = "else";
+        // static char const ENUMERATION[] = "enum";
+        // static char const FOR        [] = "for";
+        // static char const IF         [] = "if";
+        // static char const LONG       [] = "long";
+        // static char const OPERATOR   [] = "operator";
+        // static char const PRIVATE    [] = "private";
+        // static char const PUBLIC     [] = "public";
+        // static char const RETURN     [] = "return";
+        // static char const SHORT      [] = "short";
+        // static char const SIGNED     [] = "signed";
+        // static char const SIZEOF     [] = "sizeof";
+        // static char const STRUCTURE  [] = "struct";
+        // static char const SWITCH     [] = "switch";
+        // static char const UNSIGNED   [] = "unsigned";
+        // static char const USING      [] = "using";
+        // static char const VAR        [] = "var";
+        // static char const VOID       [] = "void";
+        // static char const WHILE      [] = "while";
+      } break;
 
-    //   case Token::TEXT: break;
-    //   case Token::SYMBOL: break;
-    // }
+      case Token::TEXT: break;
+      case Token::SYMBOL: {
+      } break;
+    }
 
-    // 0 == std::strncmp(token -> code, "alias", 5u)
-    // code, column, line, type
-    std::printf("[%u]: (%u : %s) \"", token - Parser::TOKENS, length,
-      Token::COMMENT    == token -> type ? "COMMENT"    :
-      Token::IDENTIFIER == token -> type ? "IDENTIFIER" :
-      Token::TEXT       == token -> type ? "TEXT"     :
-      Token::SYMBOL     == token -> type ? "SYMBOL"     :
-      "..."
-    );
-    std::fwrite(token -> code, sizeof(char), length, stdout);
-    std::printf("%3s", "\"" "\r\n");
+    // std::printf("[%u]: (%u : %s) \"", token - Parser::TOKENS, length,
+    //   Token::COMMENT    == token -> type ? "COMMENT"    :
+    //   Token::IDENTIFIER == token -> type ? "IDENTIFIER" :
+    //   Token::TEXT       == token -> type ? "TEXT"     :
+    //   Token::SYMBOL     == token -> type ? "SYMBOL"     :
+    //   "..."
+    // );
+    // std::fwrite(token -> code, sizeof(char), length, stdout);
+    // std::printf("%3s", "\"" "\r\n");
   }
 }
 
