@@ -1,82 +1,262 @@
-alias bit:1b;
-alias bool = bit;
-alias byte:1;
-alias char:1;
-alias int8  :signed 8;
-alias int16 :signed 16;
-alias int32 :signed 32;
-alias int64 :signed 64;
-alias int128:signed 128;
-alias int = int32;
-alias uint8  :unsigned 8;
-alias uint16 :unsigned 16;
-alias uint32 :unsigned 32;
-alias uint64 :unsigned 64;
-alias uint128:unsigned 128;
-alias uint = int32;
+// Automatic Semi-colon Insertion;
+// camelCase and PascalCase preferred
+// File Encoding Precedence: UTF-8 → UTF-16 LE → UTF-16 BE → UTF-32 → [system-based] → ASCII
+/* Multi-line Comment /* with nesting allowed */ */
+// Single-line Comment
 
-// `long`  doubles   the size by two  (effects members)
-// `short` truncates the size by half (effects members)
-// `signed`   enforces compile-time checks (defaults to `int`)
-// `unsigned` enforces compile-time checks (defaults to `int`)
+import <internal-path>;                        // Determined by compiler install directory
+import "relative-path";                        // Determined by current working directory
+import "C:/LapysDev/main/Lapys/absolute-path"; // Determined by filesystem
 
-struct float {
-  var sign:1;
-  var characteristics:23;
-  var mantissa:8;
+/* Keywords */
+// Qualifiers
+addr;      // Addressing only allowed through this qualification; maybe be used standalone to denote generic address
+auto;      // Automatic type deduction
+function;  // Optional specifier denoting a function
+namespace; // Denotes a named scope
+ref;       // Referencing only allowed through this qualification
+temp;      // Temporary object deduction
+type;      // Denotes type parameter in generic arguments
 
-  @constructor(float);
-  float& @operator =(float);
-  // ... and others
+// Evaluators
+addrof    (…); // Evaluates address of object
+alignof   (…); // Evaluates `byte` alignment of specified expression/ type
+assert    (…); // Exits the compilation step if constant-evaluated condition is false
+instanceof(…); // Denotes object of specified type in unevaluated context
+nilof     (…); // Overloadable function denoting empty/ null object of specified type
+sizeof    (…); // Evaluates `byte` size of specified expression/ type
+typeof    (…); // Deduces type of specified expression/ type
+
+// Constants
+null
+
+// Alternatives
+and
+not
+or
+xor
+
+// Operators
+as;       // Converts one type to another
+delete …; // `destruct <typeof …>(…)`
+new T(…); // `construct<T>       (…, alloc<Storage::HEAP>(sizeof T))`
+
+/* Types */
+// Qualifiers
+@;          // Dereferences `addr`-qualified object
+..;         // Refers to previous object in expression
++;          // Specifies integral   type (based on its `sizeof(…)`)
+[];         // Specifies collection type
+[…];        // Specifies collection type
+(…);        // Specifies functional type
+?;          // Specifies nullable   type
+alias;      // Specifies aliased    type
+class;      // Specifies structured type
+const;      // Immutable value; never truly constant unless evaluated at compile-time
+enum;       // Specifies enumerable collection type; scoped by default
+inherits;   // Inherits from specified class
+long;       // Doubles size of integral type
+noconst;    // Prevents `const` propagation to subobject
+noinherit;  // Prevents class inheritance
+nooperator; // Prevents additional operator overloads beyond what it defined itself
+noreturn;   // Prevents function return
+nothrow;    // Exception handling explicitly not supported
+noscope;    // Injects subobjects onto current scope
+short;      // Halves size of integral type
+signed;     // Treats integral type as signed
+static;     // Static-allocated storage
+threaded;   // Thread-local storage
+union;      // Specifies conjunctive type
+unsigned;   // Treats integral type as non-signed
+void;       // Ignores (return expression) type
+
+// Native-only
+alias bit  = …;           // Occupies minimum of one `byte`, but prefers packing multiple `bit`s on the same frame (`unsigned` only)
+alias bool = …;           // Differs from `byte` due to similar pack preference to `bit` (`unsigned` by default)
+alias byte = …;           // Smallest unit for hardware storage (`unsigned` by default)
+alias umax = uintmax = …; // Largest  unit for hardware instructions
+alias umin = uintmin = …; // Smallest unit for hardware instructions
+alias word = …;           // Default  unit for hardware instructions (`unsigned` by default)
+
+alias usize = …;
+alias u8    = uint8   = unsigned …;
+alias u16   = uint16  = long u8;
+alias u32   = uint32  = long u16;
+alias u64   = uint64  = long u32;
+alias u128  = uint128 = long u64;
+
+alias imax  = intmax = signed umax;
+alias imin  = intmin = signed imin;
+alias isize = signed usize;
+alias i8    = int8   = signed …;
+alias i16   = int16  = long i8;
+alias i32   = int32  = long i16;
+alias i64   = int64  = long i32;
+alias i128  = int128 = long i64;
+
+// Standard-defined
+class<uintmin width> uintwidth noinherit nooperator {
+  #private
+    bit[width] value; // Zero-sized subobjects do not contribute to the size of their object
+
+  #public
+    #constructor(const uintwidth<width> = 0u);
+    intwidth<width> #operator signed() const; // Enforced compile-time sign checks
+    /* … */
 };
 
-struct string {
-  public char[] value;
-  private { char *end; }
+class<uintmin width> intwidth noinherit nooperator {
+  #private
+    bool                           sign;
+    uintwidth<width - (.. != 0hu)> value;
 
-  // ...
-  @constructor(char[] value) : value{value} {}
-  @constructor(char*  value, unsigned length) : value{value}, end{value + length} {}
-  @constructor(char[] value, unsigned length) : value{value}, end{&value[length]} {}
+  #public
+    #constructor(const intwidth <width>);
+    #constructor(const uintwidth<width - (.. != 0hu)> = 0u);
 
-  // ...
-  static string& concat(string&);
-  static string concat(string&, string&);
-
-  get unsigned length() { return end - value; }
-  char& @operator [](signed index) { return this.value[index]; }
+    uintwidth<width> #operator unsigned() const; // Enforced compile-time sign checks
+    /* … */
 };
 
-/* ... */
-class Object {};
-class A extends Object {};
-class B extends Object:2 {};
+class<usize significance = 8zu, usize place = 23zu> float noinherit nooperator {
+  #private
+    class noscope {
+      bool              sign;
+      bit[significance] characteristics;
+      bit[place]        mantissa;
+    } value;
 
-// ...
-var explicit:4;
+  #public
+    #constructor(const float ref);
+    #constructor(const intwidth<place + significance + 1zu> = 0);
 
-Object object:4; // padded
-var inferred = object; // Object:4&
-Object:4 *pointer = &object;
-Object:4 &reference = object;
-Object:4[2] array = {object, Object:4()}; // array of references to `Object:4`
-Object:4[2] truncated:3 = array;
-Object:4[2] &reference = array;
+    float ref #operator =(const float);
+    #operator intwidth<place + significance + 1zu>() const;
+    /* … */
+};
 
-char     *text    = "Hello, World!";
-char[13] *text    = &"Hello, World!";
-char[13] &text    = "Hello, World!";
-char[]    text    = "Hello, World!"; // asserts as `13` `char`s
-char[13]  text    = "Hello, World!";
-char[13]  text:13 = "Hello, World!";
-string text    = "Lorem ipsum";
-string text:11 = "Lorem ipsum";                                 // truncates the `end` member
-string text:sizeof string - sizeof char* = "Lorem ipsum";       // truncates the `end` member
-string text:sizeof string - sizeof string::end = "Lorem ipsum"; // truncates the `end` member
+class byte_buffer noinherit nooperator {
+  #public  const usize     length;
+  #private byte addr const value;
 
-"Foo bar baz".length; // by default a `string` \
-                         unless initialized as `char[]`, or `char*`
-char*("Foo bar baz");
-char[]("Foo bar baz");
-char[13]("Foo bar baz");
-char[13]:8("Foo bar baz"); // truncated
+  #public
+    #constexpr #operator addr() const;
+};
+
+alias char = byte;
+alias f16  = float<5zu,  10zu>;
+alias f32  = float<8zu,  23zu>;
+alias f64  = float<11zu, 52zu>;
+alias f128 = float<15zu, 112zu>;
+alias int  = signed   word;
+alias uint = unsigned word;
+
+class<uintwidth<10hu> = …> string noinherit nooperator; // UTF-8 encoded by default but defers to the File Encoding Precedence
+  namespace string<…>::encoding {
+    noscope enum type inherits uintwidth<10hu> noinherit nooperator {
+      …,
+      US_ASCII, ANSI_X3_4_1968 = US_ASCII, ANSI_X3_4_1986 = US_ASCII, cp367 = US_ASCII, csASCII = US_ASCII, IBM367 = US_ASCII, iso_ir_6 = US_ASCII, ISO646_US = US_ASCII, ISO_646_irv_1991 = US_ASCII, us = US_ASCII,
+      us_dk,    csUSDK    = us_dk,
+      UTF_16,   csUTF16   = UTF_16,
+      UTF_16BE, csUTF16BE = UTF_16BE,
+      UTF_16LE, csUTF16LE = UTF_16LE,
+      UTF_32,   csUTF32   = UTF_32,
+      UTF_32BE, csUTF32BE = UTF_32BE,
+      UTF_32LE, csUTF32LE = UTF_32LE,
+      UTF_7,    csUTF7    = UTF_7,
+      UTF_8,    csUTF8    = UTF_8,
+      …
+    }
+  };
+
+class<string::encoding::type encoding> string noinherit nooperator {
+  namespace string::encoding; // Must be declared if already previously defined; `#public` access
+  alias usize = bit[…];       // One bit smaller than `usize`
+
+  #private
+    const usize             length;
+    const bool              sliced;
+    const char[] const addr value;
+
+    // …
+    #constructor<usize length>(const char[length] value, const bool sliced)
+      length = length;
+      sliced = sliced;
+      value  = value;
+    {}
+
+  #public
+    #get usize length() const {
+      return this.length; // `this.length`  refers to the subobject
+                          // `this.#length` refers to the getter/ setter; externally referred to without the `#` prefix
+    }
+
+    // …
+    #constructor<usize length>(const char[length] value)
+      #constructor<length>(value, false);
+    {}
+
+    // …
+    bool #operator ==(const string) const;
+    string #operator [](const isize index) const;
+    string #operator [](const isize start, const isize end) const;
+
+    /* … */
+};
+
+class iterator {
+  // Compile-time checks to see if `auto iterator = begin()`, `++iterator` and `(begin() == end()) as bool` is possible
+  #constexpr #iterable addr begin() const;
+  #constexpr #iterable addr end  () const;
+};
+
+class operator {
+  // There are also `prefix`, `postfix`, `ternary`, and `unary` options
+  // can definitely be used for Unicode source code security vulnerability shenanigans
+  // but I don't care ¯\_(ツ)_/¯
+  bool #operator(binary) `💙 loves`(const auto) const {
+    return true;
+  }
+
+  // — can only be done for class types
+  static bool #operator(binary) `💙 loves`(const operator a, const operator b) {
+    return false;
+  }
+};
+
+function auto lambda(auto x, auto y) { return x + y; }
+(auto x, auto y) => x + y;
+(x, y) => x + y;
+n => n + n;
+
+/* Standard library features (may contain magic) */
+import <allocator>;     // Provides a variety of memory management schemes
+import <array>;         // Literally just an extensible (and possibly operative) array utilizing `<allocator>`
+import <async>;         // Utilities for asynchronous waiting, multi-threading, and parallelization (includes `<program>` for child threads, may include `<time>` for `sleep(…)` function)
+import <bit>;           // Bitwise access/ mutations such as `bitsizeof(…)`; Does not support bit-level addressing
+import <graphics>;      // Utilities related to graphics
+import <graphics/font>; //
+import <list>;          // Literally just a linked list
+import <map>;           // Literally two `<array>`s with one being the key collection and the other the value collection
+import <math>;          // Mathematical constants & functions
+import <math/random>;   //
+import <network>;       // Utilities related to networking
+import <program>;       // Utilities related to the program such as its child threads, command-line arguments, execution path, memory usage(?), name, signals, suspension state, termination, …
+import <queue>;         // Literally just an `<array>` that adds/ removes its elements in a First-In-First-Out order
+import <set>;           // Literally a glorified `<array>` that enforces all its elements being unique
+import <stack>;         // Literally just an `<array>` that adds/ removes its elements in a Last-In-First-Out order
+import <time>;          // Utilities related to date localization, performance benchmarking, timestamps, …
+import <unicode>;       // Utilities related to text encodings
+
+// …
+namespace Storage {
+  noscope enum type inherits uintmin noinherit nooperator {
+    HEAP,   // Allocates memory on the program heap if available
+    STATIC, // Allocates memory on the program stack if available
+    STACK   // Allocates memory on the current stack frame; gets popped automatically through use of injected stack-frame pointer
+  };
+}
+
+#constexpr function<Storage::type Storage = Storage::STACK> byte_buffer alloc    (const usize size);
+#constexpr function<type          type>                     type        construct(auto ref... arguments, const addr storage = null); // `null` defers to `alloc<Storage::STACK>(sizeof type)` here
+#constexpr function<type          type>                     auto        destruct (auto ref... arguments, type ref object) = typeof(object.#destructor(arguments...));
