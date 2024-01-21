@@ -4,9 +4,9 @@
 /* Multi-line Comment /* with nesting allowed */ */
 // Single-line Comment
 
-import <internal-path>;                        // Determined by compiler install directory
-import "relative-path";                        // Determined by current working directory
-import "C:/LapysDev/main/Lapys/absolute-path"; // Determined by filesystem
+#import <internal-path>;                        // Determined by compiler install directory
+#import "relative-path";                        // Determined by current working directory
+#import "C:/LapysDev/main/Lapys/absolute-path"; // Determined by filesystem
 
 /* Keywords */
 // Qualifiers
@@ -37,19 +37,30 @@ or
 xor
 
 // Operators
-as;       // Converts one type to another
-delete …; // `destruct <typeof …>(…)`
-new T(…); // `construct<T>       (…, alloc<Storage::HEAP>(sizeof T))`
+^^;         // Boolean XOR
+&&=;        // Compound boolean AND
+break    …; // Ends iterative/ nested label (otherwise `…; break;`)
+continue …; // Jumps iterative/ nested label (otherwise `…; continue;`)
+defer    …; // Defers `…` to end of scope
+||=;        // Compound boolean OR
+|…|;        // Absolution operator
+0o;         // Octal notation
+as;         // Converts one type to another
+delete …;   // `destruct <typeof …>(…)`
+new T(…);   // `construct<T>       (…, alloc<Storage::HEAP>(sizeof T))`
 
 /* Types */
 // Qualifiers
-@;          // Dereferences `addr`-qualified object
-..;         // Refers to previous object in expression
+(…);        // Specifies functional type
 +;          // Specifies integral   type (based on its `sizeof(…)`)
+..;         // Refers to previous top-level object (skips first member/ subobject) in expression
+..1;        // Refers to first object in expression
+..2;        // Refers to second object in expression
+..n;        // Refers to last object in expression
+?;          // Specifies nullable   type
+@;          // Dereferences `addr`-qualified object
 [];         // Specifies collection type
 […];        // Specifies collection type
-(…);        // Specifies functional type
-?;          // Specifies nullable   type
 alias;      // Specifies aliased    type
 class;      // Specifies structured type
 const;      // Immutable value; never truly constant unless evaluated at compile-time
@@ -60,8 +71,8 @@ noconst;    // Prevents `const` propagation to subobject
 noinherit;  // Prevents class inheritance
 nooperator; // Prevents additional operator overloads beyond what it defined itself
 noreturn;   // Prevents function return
-nothrow;    // Exception handling explicitly not supported
 noscope;    // Injects subobjects onto current scope
+nothrow;    // Exception handling explicitly not supported
 short;      // Halves size of integral type
 signed;     // Treats integral type as signed
 static;     // Static-allocated storage
@@ -71,7 +82,7 @@ unsigned;   // Treats integral type as non-signed
 void;       // Ignores (return expression) type
 
 // Native-only
-alias bit  = …;           // Occupies minimum of one `byte`, but prefers packing multiple `bit`s on the same frame (`unsigned` only)
+alias bit  = …;           // Occupies minimum of one `byte`, but prefers packing multiple `bit`s on the same (stack) frame (`unsigned` only)
 alias bool = …;           // Differs from `byte` due to similar pack preference to `bit` (`unsigned` by default)
 alias byte = …;           // Smallest unit for hardware storage (`unsigned` by default)
 alias umax = uintmax = …; // Largest  unit for hardware instructions
@@ -95,6 +106,9 @@ alias i64   = int64  = long i32;
 alias i128  = int128 = long i64;
 
 // Standard-defined
+class A {}
+class A::B {}
+
 class<uintmin width> uintwidth noinherit nooperator {
   #private
     bit[width] value; // Zero-sized subobjects do not contribute to the size of their object
@@ -103,7 +117,7 @@ class<uintmin width> uintwidth noinherit nooperator {
     #constructor(const uintwidth<width> = 0u);
     intwidth<width> #operator signed() const; // Enforced compile-time sign checks
     /* … */
-};
+}
 
 class<uintmin width> intwidth noinherit nooperator {
   #private
@@ -116,7 +130,7 @@ class<uintmin width> intwidth noinherit nooperator {
 
     uintwidth<width> #operator unsigned() const; // Enforced compile-time sign checks
     /* … */
-};
+}
 
 class<usize significance = 8zu, usize place = 23zu> float noinherit nooperator {
   #private
@@ -133,7 +147,7 @@ class<usize significance = 8zu, usize place = 23zu> float noinherit nooperator {
     float ref #operator =(const float);
     #operator intwidth<place + significance + 1zu>() const;
     /* … */
-};
+}
 
 class byte_buffer noinherit nooperator {
   #public  const usize     length;
@@ -141,7 +155,11 @@ class byte_buffer noinherit nooperator {
 
   #public
     #constexpr #operator addr() const;
-};
+}
+
+class bigfloat noinherit nooperator;
+class bigint   noinherit nooperator;
+class biguint  noinherit nooperator;
 
 alias char = byte;
 alias f16  = float<5zu,  10zu>;
@@ -167,7 +185,7 @@ class<uintwidth<10hu> = …> string noinherit nooperator; // UTF-8 encoded by de
       UTF_8,    csUTF8    = UTF_8,
       …
     }
-  };
+  }
 
 class<string::encoding::type encoding> string noinherit nooperator {
   namespace string::encoding; // Must be declared if already previously defined; `#public` access
@@ -202,27 +220,27 @@ class<string::encoding::type encoding> string noinherit nooperator {
     string #operator [](const isize start, const isize end) const;
 
     /* … */
-};
+}
 
 class iterator {
   // Compile-time checks to see if `auto iterator = begin()`, `++iterator` and `(begin() == end()) as bool` is possible
   #constexpr #iterable addr begin() const;
   #constexpr #iterable addr end  () const;
-};
+}
 
 class operator {
-  // There are also `prefix`, `postfix`, `ternary`, and `unary` options
+  // There are also `postfix`, `prefix`, `ternary`, and `unary` options
   // can definitely be used for Unicode source code security vulnerability shenanigans
   // but I don't care ¯\_(ツ)_/¯
-  bool #operator(binary) `💙 loves`(const auto) const {
+  bool #operator(binary) "💙 loves"(const auto) const {
     return true;
   }
 
   // — can only be done for class types
-  static bool #operator(binary) `💙 loves`(const operator a, const operator b) {
+  static bool #operator(binary) "💙 loves"(const operator a, const operator b) {
     return false;
   }
-};
+}
 
 function auto lambda(auto x, auto y) { return x + y; }
 (auto x, auto y) => x + y;
@@ -234,8 +252,11 @@ import <allocator>;     // Provides a variety of memory management schemes
 import <array>;         // Literally just an extensible (and possibly operative) array utilizing `<allocator>`
 import <async>;         // Utilities for asynchronous waiting, multi-threading, and parallelization (includes `<program>` for child threads, may include `<time>` for `sleep(…)` function)
 import <bit>;           // Bitwise access/ mutations such as `bitsizeof(…)`; Does not support bit-level addressing
+import <console>;       // (includes `<program>` for CLI/ stdout interaction)
+import <file>;          // Utilities related to file I/O (includes `<url>`)
 import <graphics>;      // Utilities related to graphics
 import <graphics/font>; //
+import <hardware>;      // Utilities related to a ton of hardware stuff
 import <list>;          // Literally just a linked list
 import <map>;           // Literally two `<array>`s with one being the key collection and the other the value collection
 import <math>;          // Mathematical constants & functions
@@ -246,15 +267,16 @@ import <queue>;         // Literally just an `<array>` that adds/ removes its el
 import <set>;           // Literally a glorified `<array>` that enforces all its elements being unique
 import <stack>;         // Literally just an `<array>` that adds/ removes its elements in a Last-In-First-Out order
 import <time>;          // Utilities related to date localization, performance benchmarking, timestamps, …
+import <url>;           // Utilities related to anything that uses a resource locator path
 import <unicode>;       // Utilities related to text encodings
 
 // …
 namespace Storage {
   noscope enum type inherits uintmin noinherit nooperator {
-    HEAP,   // Allocates memory on the program heap if available
+    HEAP,   // Allocates memory on the program heap  if available (not compile-time supported)
     STATIC, // Allocates memory on the program stack if available
     STACK   // Allocates memory on the current stack frame; gets popped automatically through use of injected stack-frame pointer
-  };
+  }
 }
 
 #constexpr function<Storage::type Storage = Storage::STACK> byte_buffer alloc    (const usize size);
