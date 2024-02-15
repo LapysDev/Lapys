@@ -242,6 +242,10 @@ class operator {
   }
 }
 
+for {}
+while {}
+
+function auto parameters(int a, b, auto c, float d) { /* `a`, and `b` `int`; `c` is delegated; `d` is `float` */ }
 function auto lambda(auto x, auto y) { return x + y; }
 (auto x, auto y) => x + y;
 (x, y) => x + y;
