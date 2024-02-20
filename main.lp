@@ -53,7 +53,7 @@ new T(…);   // `construct<T>       (…, alloc<Storage::HEAP>(sizeof T))`
 // Qualifiers
 (…);        // Specifies functional type
 +;          // Specifies integral   type (based on its `sizeof(…)`)
-..;         // Refers to previous top-level object (skips first member/ subobject) in expression
+..;         // Refers to previous top-level object in expression; `.. .` is different from `...` for property access
 ..1;        // Refers to first object in expression
 ..2;        // Refers to second object in expression
 ..n;        // Refers to last object in expression
@@ -286,3 +286,7 @@ namespace Storage {
 #constexpr function<Storage::type Storage = Storage::STACK> byte_buffer alloc    (const usize size);
 #constexpr function<type          type>                     type        construct(auto ref... arguments, const addr storage = null); // `null` defers to `alloc<Storage::STACK>(sizeof type)` here
 #constexpr function<type          type>                     auto        destruct (auto ref... arguments, type ref object) = typeof(object.#destructor(arguments...));
+
+with (object) {
+  .property /* --> ...property */ != property;
+}
