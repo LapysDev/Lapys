@@ -37,17 +37,20 @@ or
 xor
 
 // Operators
-^^;         // Boolean XOR
-&&=;        // Compound boolean AND
-break    …; // Ends iterative/ nested label (otherwise `…; break;`)
-continue …; // Jumps iterative/ nested label (otherwise `…; continue;`)
-defer    …; // Defers `…` to end of scope
-||=;        // Compound boolean OR
-|…|;        // Absolution operator
-0o;         // Octal notation
-as;         // Converts one type to another
-delete …;   // `destruct <typeof …>(…)`
-new T(…);   // `construct<T>       (…, alloc<Storage::HEAP>(sizeof T))`
+^^;               // Boolean XOR
+&&=;              // Compound boolean AND
+..1 and then ..2; // Guarantees evaluates ..2 after ..1
+break    …;      // Ends  block (otherwise `…; break;`)
+do while …;      // Consistent with `else if …` format
+continue …;      // Jumps block (otherwise `…; continue;`)
+defer    …;      // Defers `…` to end of scope
+||=;              // Compound boolean OR
+|…|;             // Absolution operator
+…?…:…          // Ternary need not be completed in some cases
+0o;               // Octal notation
+as;               // Converts one type to another
+delete …;        // `destruct <typeof …>(…)`
+new T(…);        // `construct<T>        (…, alloc<Storage::HEAP>(sizeof T))`
 
 /* Types */
 // Qualifiers
