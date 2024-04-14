@@ -122,7 +122,7 @@ Evaluators
 • assert     [(] … [)] → Raises error if `(bool) …` is falsy
 • instanceof [(] T [)] → Denotes object of type `T` in an unevaluated context
 • nilof      [(] T [)] → Represents extensible monoadic function(s) which denote the null object of type `T`
-• sizeof     [(] … [)] → Evaluates `byte` size of expression/ type
+• sizeof     [(] … [)] → Evaluates `byte` size of expression/ type; Works on `#nooptimize` functions but otherwise prefer `Function::…(…)`
 • typeof     [(] … [)] → Deduces    type       of expression/ type
 
 Features
