@@ -9,7 +9,7 @@ APIs or Standards
 • Image: …
   ▴ Matrix
   │ ╰─ QR: …
-  ╰─ APNG `.apng`, AVIF `.avif`, BMP `.bmp`, CR3 `.cr3`, GIF `.gif`, JPEG `.jpeg` `.jpg`, PNG `.png`, SVG `.svg`, WEBP `.webp`, …
+  ╰─ APNG `.apng`, AVIF `.avif`, BMP `.bmp`, CR3 `.cr3`, GIF `.gif`, JPEG `.jpeg` `.jpg`, PNG `.png`, SVG `.svg`, TinyVG `.tvg`, WEBP `.webp`, …
 • Mathematics
   ▴ Geometry
   ▴ Physics
@@ -461,9 +461,15 @@ Type Specifications
       GLOBAL
     }
 
-    generic<Storage::Type = Storage::AUTO> function span<byte>                                        alloc    (usize)                               { … }
-    generic<type>                          function type addr                                         construct(auto...,           type addr = NULL) { … }
-    generic<type>                          function typeof(instanceof type.#destructor(arguments...)) destruct (auto... arguments, type addr = NULL) { … }
+    /* … */
+    generic <Storage::Type = Storage::AUTO>
+    function span<byte> alloc(usize) { … }
+
+    generic <type>
+    function type addr construct(auto..., type addr = NULL) { … }
+
+    generic <type>
+    function typeof(instanceof type.#destructor(arguments...)) destruct(auto... arguments, type addr = NULL) { … }
   }
 
   using object {
