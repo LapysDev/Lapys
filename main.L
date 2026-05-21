@@ -146,7 +146,7 @@ APIs or Standards
       ⬟ Unit-Interval Reals (-1, +1): Takum (https://link.springer.com/chapter/10.1007/978-3-031-72709-2_1)
     ▪ Reflection
     ▪ String → Literals prefer source text encoding
-      ⬟ Regular Expression literals
+      ⬟ Regular Expression literals i.e. `/(?:)/gi`, `/^$/1`
       ⬟ Rope
       ⬟ Small string optimization
     ▪ … → Non-literals; Consider Array-of-Structures vs Structure-of-Arrays implementation support
@@ -243,6 +243,7 @@ Features
 • Binary, hexadecimal, and octal number literals support scientific notation e.g. `0x1.2p-3 == 1.125 * (2 ** -3)`
 • Conditional members
 • Deferred line termination i.e. automatic semi-colon insertion
+• Do `var x 42` by default instead of `var x = 42`; Look for more opportunities to drop tokens like this
 • Errors should be colored and formatted as `file_name:file_extension:line_number:character_byte_offset`
 • Function/ type/ value metadata e.g. "never odd" constraint, e.t.c. to allow compiler optimize non-generic constraints like `const`
 • Hash symbol (`#`) connotes special constructs or operations e.g. access specifiers, constructors, …; Does not need its own entire line to be evaluated
@@ -655,4 +656,14 @@ print(x.b); // ✅ 2```
   using object {
     .property // object.property
   }
+
+  // not sure about this one
+  @ordered {
+    x += 4;
+    y += x;
+  }
+
+  // order doesn’t matter here
+  y += prev_x;
+  x += 4;
 ```
